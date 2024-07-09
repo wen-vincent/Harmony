@@ -1,9 +1,5 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import testNapi from 'libentry.so';
-
-async function delay(ms:number):Promise<number>{
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+import nativeModule from 'libentry.so'; // 通过import的方式，引入Native能力
 
 @Entry
 @Component
@@ -17,13 +13,16 @@ struct Index {
           .fontSize(50)
           .fontWeight(FontWeight.Bold)
           .onClick( () => {
-            // hilog.info(0x0000, 'testTag', 'Test NAPI 2 + 3 = %{public}d', testNapi.add(2, 3));
-            testNapi.asyncWork(10, 22,  (result) => {
-              hilog.info(0x0000, 'mytest', 'result is %{public}d', result);
-              // await delay(1000);
-              return 12321;
-            });
-          })
+            let callback = (): Promise<string> => {
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                hilog.debug(0x1234,"mytest","reasdasd");
+                  resolve("string from promise");
+                }, 1000);
+              });
+            }
+            nativeModule.startThread(callback);
+            })
       }
       .width('100%')
     }

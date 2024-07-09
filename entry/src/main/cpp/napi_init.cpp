@@ -1,5 +1,6 @@
 #include "napi/native_api.h"
 #include "hilog/log.h"
+#include "future"
 
 static napi_value Add(napi_env env, napi_callback_info info)
 {
@@ -28,69 +29,123 @@ static napi_value Add(napi_env env, napi_callback_info info)
 }
 
 struct CallbackData {
-  napi_async_work asyncWork = nullptr;
-  napi_ref callbackRef = nullptr;
-  double args[2] = {0};
-  double result = 0;
+    napi_threadsafe_function tsfn;
+    napi_async_work work;
 };
 
-static void CompleteCB(napi_env env, napi_status status, void *data) 
+static void ExecuteWork(napi_env env, void *data)
+{
+        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
+
+    CallbackData *callbackData = reinterpret_cast<CallbackData *>(data);
+    std::promise<std::string> promise;
+    auto future = promise.get_future();
+    napi_call_threadsafe_function(callbackData->tsfn, &promise, napi_tsfn_nonblocking);
+    try {
+        auto result = future.get();
+        // OH_LOG_INFO(LOG_APP, "XXX, Result from JS %{public}s", result.c_str());
+    } catch (const std::exception &e) {
+        // OH_LOG_INFO(LOG_APP, "XXX, Result from JS %{public}s", e.what());
+    }
+}
+
+static napi_value ResolvedCallback(napi_env env, napi_callback_info info)
+{
+        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
+
+    void *data = nullptr;
+    size_t argc = 1;
+    napi_value argv[1];
+    if (napi_get_cb_info(env, info, &argc, argv, nullptr, &data) != napi_ok) {
+        return nullptr;
+    }
+    size_t result = 0;
+    char buf[32] = {0};
+    napi_get_value_string_utf8(env, argv[0], buf, 32, &result);
+    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}d %{public}s\n",__func__ ,result,buf);
+    reinterpret_cast<std::promise<std::string> *>(data)->set_value(std::string(buf));
+    return nullptr;
+}
+
+static napi_value RejectedCallback(napi_env env, napi_callback_info info)
+{
+        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
+
+    void *data = nullptr;
+    if (napi_get_cb_info(env, info, nullptr, nullptr, nullptr, &data) != napi_ok) {
+        return nullptr;
+    }
+    reinterpret_cast<std::promise<std::string> *>(data)->set_exception(
+        std::make_exception_ptr(std::runtime_error("Error in jsCallback")));
+    return nullptr;
+}
+
+static void CallJs(napi_env env, napi_value jsCb, void *context, void *data)
 {
     
-    CallbackData *callbackData = reinterpret_cast<CallbackData *>(data);
-    napi_value callbackArg[1] = {nullptr};
-    napi_create_double(env, callbackData->result, &callbackArg[0]);
-    napi_value callback = nullptr;
-    napi_get_reference_value(env, callbackData->callbackRef, &callback);
-    // 执行回调函数
-    napi_value result;
-    napi_value undefined;
+    if (env == nullptr) {
+        return;    
+    }
+        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
+
+    napi_value undefined = nullptr;
+    napi_value promise = nullptr;
     napi_get_undefined(env, &undefined);
-    napi_value argv;
-    napi_call_function(env, undefined, callback, 1, callbackArg, &result);
-
-    int num;
-    napi_get_value_int32(env, result, &num);
-    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "GetMediasoupDevice %{public}d\n",num);
-    // 删除napi_ref对象以及异步任务
-    napi_delete_reference(env, callbackData->callbackRef);
-    napi_delete_async_work(env, callbackData->asyncWork);
-    delete callbackData;
+    napi_call_function(env, undefined, jsCb, 0, nullptr, &promise);
+    napi_value thenFunc = nullptr;
+    if (napi_get_named_property(env, promise, "then", &thenFunc) != napi_ok) {
+        return;
+    }
+    napi_value resolvedCallback;
+    napi_value rejectedCallback;
+    napi_create_function(env, "resolvedCallback", NAPI_AUTO_LENGTH, ResolvedCallback, data,
+                         &resolvedCallback);
+    napi_create_function(env, "rejectedCallback", NAPI_AUTO_LENGTH, RejectedCallback, data,
+                         &rejectedCallback);
+    napi_value argv[2] = {resolvedCallback, rejectedCallback};
+    napi_call_function(env, promise, thenFunc, 2, argv, nullptr);
 }
-
-static void ExecuteCB(napi_env env, void *data) 
+static void WorkComplete(napi_env env, napi_status status, void *data)
 {
+        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
+
     CallbackData *callbackData = reinterpret_cast<CallbackData *>(data);
-    callbackData->result = callbackData->args[0] + callbackData->args[1];
+    napi_release_threadsafe_function(callbackData->tsfn, napi_tsfn_release);
+    napi_delete_async_work(env, callbackData->work);
+    callbackData->tsfn = nullptr;
+    callbackData->work = nullptr;
 }
-
-napi_value AsyncWork(napi_env env, napi_callback_info info) 
+static napi_value StartThread(napi_env env, napi_callback_info info)
 {
-    size_t argc = 3;
-    napi_value args[3];
-    napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
-    auto asyncContext = new CallbackData();
-    // 将接收到的参数保存到callbackData
-    napi_get_value_double(env, args[0], &asyncContext->args[0]);
-    napi_get_value_double(env, args[1], &asyncContext->args[1]);
-    // 将传入的callback转换为napi_ref延长其生命周期，防止被GC掉
-    napi_create_reference(env, args[2], 1, &asyncContext->callbackRef);
+        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
+
+    size_t argc = 1;
+    napi_value jsCb = nullptr;
+    CallbackData *callbackData = nullptr;
+    napi_get_cb_info(env, info, &argc, &jsCb, nullptr, reinterpret_cast<void **>(&callbackData));
+
+    // 创建一个线程安全函数
     napi_value resourceName = nullptr;
-    napi_create_string_utf8(env, "asyncWorkCallback", NAPI_AUTO_LENGTH, &resourceName);
-    // 创建异步任务
-    napi_create_async_work(env, nullptr, resourceName, ExecuteCB, CompleteCB, 
-                           asyncContext, &asyncContext->asyncWork); 
-    // 将异步任务加入队列
-    napi_queue_async_work(env, asyncContext->asyncWork);
+    napi_create_string_utf8(env, "Thread-safe Function Demo", NAPI_AUTO_LENGTH, &resourceName);
+    napi_create_threadsafe_function(env, jsCb, nullptr, resourceName, 0, 1, callbackData, nullptr, 
+        callbackData, CallJs, &callbackData->tsfn);
+
+    // 创建一个异步任务
+    napi_create_async_work(env, nullptr, resourceName, ExecuteWork, WorkComplete, callbackData,
+        &callbackData->work);
+
+    // 将异步任务加入到异步队列中
+    napi_queue_async_work(env, callbackData->work);
     return nullptr;
 }
 
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports)
 {
+    CallbackData *callbackData = new CallbackData();
     napi_property_descriptor desc[] = {
         { "add", nullptr, Add, nullptr, nullptr, nullptr, napi_default, nullptr },
-        { "asyncWork", nullptr, AsyncWork, nullptr, nullptr, nullptr, napi_default, nullptr }
+        {"startThread", nullptr, StartThread, nullptr, nullptr, nullptr, napi_default, callbackData}
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;
