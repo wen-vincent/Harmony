@@ -1,0 +1,49 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\viper\\.ohos\\config\\default_testNodeApi_6m_aLu3PnapngyXzHjpTxJBlHy3cRxneKZFSdvlcEnE=.cer",
+          "storePassword": "0000001B2FE8EE1D675B9C8701C39F1A4C321B5806F4DE8A76E0B614DE90E1BCA840EC1240C716275F3060",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B39CAD6220DD96FF6FA6818DEBAA5976D371FDB61126C11F03E212CB6D58649F7A0C57921E0C040",
+          "profile": "C:\\Users\\viper\\.ohos\\config\\default_testNodeApi_6m_aLu3PnapngyXzHjpTxJBlHy3cRxneKZFSdvlcEnE=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\viper\\.ohos\\config\\default_testNodeApi_6m_aLu3PnapngyXzHjpTxJBlHy3cRxneKZFSdvlcEnE=.p12"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "compatibleSdkVersion": "5.0.0(12)",
+        "runtimeOS": "HarmonyOS",
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}
