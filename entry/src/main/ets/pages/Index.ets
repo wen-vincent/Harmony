@@ -17,7 +17,7 @@ struct Index {
             return new Promise((resolve) => {
               setTimeout(() => {
                 hilog.debug(0x1234,"mytest","reasdasd");
-                  resolve("string from promise");
+                  resolve("xxxxxxxxxxxxxxxxxxxxxx");
                 }, 1000);
               });
             }

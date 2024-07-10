@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\viper\\.ohos\\config\\default_testNodeApi_6m_aLu3PnapngyXzHjpTxJBlHy3cRxneKZFSdvlcEnE=.cer",
-          "storePassword": "0000001B2FE8EE1D675B9C8701C39F1A4C321B5806F4DE8A76E0B614DE90E1BCA840EC1240C716275F3060",
+          "certpath": "C:\\Users\\Administrator\\.ohos\\config\\default_Harmony_cHWI1lx40iq3g4EXzN1bD8WYzt9MuIAFzOuM3yVVRo0=.cer",
+          "storePassword": "0000001B0FE9DCD777A259021141983AF09F8AF2F2D9CE1116E39A942DB12A184F1BF063C93D3A6C5A351D",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B39CAD6220DD96FF6FA6818DEBAA5976D371FDB61126C11F03E212CB6D58649F7A0C57921E0C040",
-          "profile": "C:\\Users\\viper\\.ohos\\config\\default_testNodeApi_6m_aLu3PnapngyXzHjpTxJBlHy3cRxneKZFSdvlcEnE=.p7b",
+          "keyPassword": "0000001BC70D81E4B1910D6C29D1650BDA9275E3027D3684627C189B728D3B5263BC88CB3D5D01188B5657",
+          "profile": "C:\\Users\\Administrator\\.ohos\\config\\default_Harmony_cHWI1lx40iq3g4EXzN1bD8WYzt9MuIAFzOuM3yVVRo0=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\viper\\.ohos\\config\\default_testNodeApi_6m_aLu3PnapngyXzHjpTxJBlHy3cRxneKZFSdvlcEnE=.p12"
+          "storeFile": "C:\\Users\\Administrator\\.ohos\\config\\default_Harmony_cHWI1lx40iq3g4EXzN1bD8WYzt9MuIAFzOuM3yVVRo0=.p12"
         }
       }
     ],
