@@ -21,7 +21,9 @@ struct Index {
                 }, 1000);
               });
             }
+            hilog.debug(0x1234,"mytest","star");
             nativeModule.startThread(callback);
+            hilog.debug(0x1234,"mytest","stop");
             })
       }
       .width('100%')

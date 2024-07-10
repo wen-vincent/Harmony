@@ -32,27 +32,34 @@ struct CallbackData {
     napi_threadsafe_function tsfn;
     napi_async_work work;
 };
+std::promise<std::string> prom;
 
 static void ExecuteWork(napi_env env, void *data)
 {
-        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
-
+    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
     CallbackData *callbackData = reinterpret_cast<CallbackData *>(data);
     std::promise<std::string> promise;
     auto future = promise.get_future();
     napi_call_threadsafe_function(callbackData->tsfn, &promise, napi_tsfn_nonblocking);
-    try {
-        auto result = future.get();
-        // OH_LOG_INFO(LOG_APP, "XXX, Result from JS %{public}s", result.c_str());
+            try {
+
+        std::string result = future.get();
+                  char buf[32] = "asdasd";
+        const char* cstr = result.c_str();
+        std::copy(cstr, cstr + (result.length()+1), buf);
+//         const char* info = result.c_str();
+//         const char info[32] = "asdasd";
+        const  char *buf2 = buf;
+//         OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest StartThread %{public}s\n",buf2);
     } catch (const std::exception &e) {
-        // OH_LOG_INFO(LOG_APP, "XXX, Result from JS %{public}s", e.what());
+//         OH_LOG_Print(LOG_APP, LOG_INFO,LOG_DOMAIN,"mytest, Result from JS %{public}s", e.what());
     }
 }
 
 static napi_value ResolvedCallback(napi_env env, napi_callback_info info)
 {
-        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
-
+    
+    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
     void *data = nullptr;
     size_t argc = 1;
     napi_value argv[1];
@@ -62,15 +69,15 @@ static napi_value ResolvedCallback(napi_env env, napi_callback_info info)
     size_t result = 0;
     char buf[32] = {0};
     napi_get_value_string_utf8(env, argv[0], buf, 32, &result);
-    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}d %{public}s\n",__func__ ,result,buf);
+    prom.set_value("asdasd");
+    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu %{public}s\n",__func__ ,result,buf);
     reinterpret_cast<std::promise<std::string> *>(data)->set_value(std::string(buf));
     return nullptr;
 }
 
 static napi_value RejectedCallback(napi_env env, napi_callback_info info)
 {
-        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
-
+    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
     void *data = nullptr;
     if (napi_get_cb_info(env, info, nullptr, nullptr, nullptr, &data) != napi_ok) {
         return nullptr;
@@ -82,12 +89,11 @@ static napi_value RejectedCallback(napi_env env, napi_callback_info info)
 
 static void CallJs(napi_env env, napi_value jsCb, void *context, void *data)
 {
-    
+        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
+
     if (env == nullptr) {
         return;    
     }
-        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
-
     napi_value undefined = nullptr;
     napi_value promise = nullptr;
     napi_get_undefined(env, &undefined);
@@ -104,21 +110,23 @@ static void CallJs(napi_env env, napi_value jsCb, void *context, void *data)
                          &rejectedCallback);
     napi_value argv[2] = {resolvedCallback, rejectedCallback};
     napi_call_function(env, promise, thenFunc, 2, argv, nullptr);
+    
 }
+
 static void WorkComplete(napi_env env, napi_status status, void *data)
 {
-        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
-
+    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
     CallbackData *callbackData = reinterpret_cast<CallbackData *>(data);
     napi_release_threadsafe_function(callbackData->tsfn, napi_tsfn_release);
     napi_delete_async_work(env, callbackData->work);
     callbackData->tsfn = nullptr;
     callbackData->work = nullptr;
+    
 }
+
 static napi_value StartThread(napi_env env, napi_callback_info info)
 {
-        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
-
+    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s\n",__func__ );
     size_t argc = 1;
     napi_value jsCb = nullptr;
     CallbackData *callbackData = nullptr;
@@ -136,6 +144,11 @@ static napi_value StartThread(napi_env env, napi_callback_info info)
 
     // 将异步任务加入到异步队列中
     napi_queue_async_work(env, callbackData->work);
+    
+
+        std::future<std::string> result = prom.get_future();
+	 OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "aaaaaaaaaaaaaStartThread %{public}s\n",result.get().c_str() );
+
     return nullptr;
 }
 
