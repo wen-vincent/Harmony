@@ -2,7 +2,7 @@
   "app": {
     "signingConfigs": [
       {
-        "name": "default",
+        "name": "home",
         "type": "HarmonyOS",
         "material": {
           "certpath": "C:\\Users\\Administrator\\.ohos\\config\\default_Harmony_cHWI1lx40iq3g4EXzN1bD8WYzt9MuIAFzOuM3yVVRo0=.cer",
@@ -13,12 +13,25 @@
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\Administrator\\.ohos\\config\\default_Harmony_cHWI1lx40iq3g4EXzN1bD8WYzt9MuIAFzOuM3yVVRo0=.p12"
         }
+      },
+      {
+        "name": "company",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\viper\\.ohos\\config\\default_Harmony_cHWI1lx40iq3g4EXzN1bD8WYzt9MuIAFzOuM3yVVRo0=.cer",
+          "storePassword": "0000001BEEA598CF81C405C97A86BC178152E07B6FF02C96C1F2898D5BAD129EB0E6408365F3296BCD77B2",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B821AB3200035DE3EF9C93623565D9BC523BCC57AC1C5C8262CAB2ACDD3D36314AE46D8B6E978F7",
+          "profile": "C:\\Users\\viper\\.ohos\\config\\default_Harmony_cHWI1lx40iq3g4EXzN1bD8WYzt9MuIAFzOuM3yVVRo0=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\viper\\.ohos\\config\\default_Harmony_cHWI1lx40iq3g4EXzN1bD8WYzt9MuIAFzOuM3yVVRo0=.p12"
+        }
       }
     ],
     "products": [
       {
         "name": "default",
-        "signingConfig": "default",
+        "signingConfig": "company",
         "compatibleSdkVersion": "5.0.0(12)",
         "runtimeOS": "HarmonyOS",
       }
