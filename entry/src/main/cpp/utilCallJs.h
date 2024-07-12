@@ -9,6 +9,7 @@ struct CallbackData {
     napi_threadsafe_function tsfn;
     napi_async_work work;
     utilCallJs* obj;
+    std::string result;
 };
 typedef void(*getStr)(std::string);
 class utilCallJs {
