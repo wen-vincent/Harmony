@@ -9,7 +9,7 @@ struct CallbackData {
     napi_threadsafe_function tsfn;
     napi_async_work work;
     utilCallJs* obj;
-    std::string result;
+    std::string parm;
 };
 typedef void(*getStr)(std::string);
 class utilCallJs {
@@ -18,7 +18,7 @@ class utilCallJs {
         ~utilCallJs(){}
     public:
         napi_value loadJs(napi_env env, napi_callback_info info);
-        std::future<std::string> executeJs(napi_env env,bool isMainThread);
+        std::future<std::string> executeJs(napi_env env,bool isMainThread,std::string& parm);
         void  executeJs(napi_env env, bool isMainThread,  getStr* cb);
 
     private:
@@ -30,6 +30,7 @@ class utilCallJs {
     private:
         CallbackData * callbackData = nullptr;
         std::promise<std::string> prom;
+        std::string parm;
 };
 
 #endif //HARMONY_UTILCALLJS_H

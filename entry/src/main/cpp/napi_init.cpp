@@ -39,17 +39,18 @@ static napi_value run(napi_env env, napi_callback_info info,utilCallJs* calljs,b
 //     std::this_thread::sleep_for(std::chrono::seconds(2));
 
 //     calljs->executeJs(env);
-
+std::string parm = "@@@@@@@@@@@";
     std::string str;
     if(!isMainThread) {
-        std::future<std::string> fu = calljs->executeJs(env,isMainThread);
+        std::future<std::string> fu = calljs->executeJs(env,isMainThread,parm);
         str = fu.get();
             OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu -----%{public}s %{public}s\n",__func__ ,std::this_thread::get_id(),"run 结束",str.c_str());
 
     }
     else {
 //         calljs->executeJs(env,isMainThread,(getStr*)getValue);
-        std::future<std::string> fut = calljs->executeJs(env,isMainThread);
+        
+        std::future<std::string> fut = calljs->executeJs(env,isMainThread,parm);
         std::chrono::milliseconds span(100);
         while (fut.wait_for(span) == std::future_status::timeout){
             OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu -----%{public}s \n",__func__ ,std::this_thread::get_id(),"run 等待。。。");

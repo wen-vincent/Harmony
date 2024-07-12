@@ -4,8 +4,9 @@ void utilCallJs::ExecuteWork(napi_env env, void *data)
 {
     OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu\n",__func__,std::this_thread::get_id() );
     CallbackData *callbackData = reinterpret_cast<CallbackData *>(data);
+        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThreadxxxxxxx %{public}s %{public}zu %{public}u\n",__func__,std::this_thread::get_id() ,callbackData);
+
     std::promise<std::string>& promise = std::ref(callbackData->obj->prom);
-    callbackData->result = "testCallbackData";
     napi_call_threadsafe_function(callbackData->tsfn, &promise, napi_tsfn_nonblocking);
 }
 
@@ -43,10 +44,14 @@ void utilCallJs::CallJs(napi_env env, napi_value jsCb, void *context, void *data
     if (env == nullptr) {
         return;    
     }
+    CallbackData *callbackData = reinterpret_cast<CallbackData *>(context);
     napi_value undefined = nullptr;
     napi_value promise = nullptr;
+    napi_value callbackArg[1] = {nullptr};
+    
+    napi_create_string_utf8(env, callbackData->parm.c_str(),NAPI_AUTO_LENGTH, &callbackArg[0]);
     napi_get_undefined(env, &undefined);
-    napi_call_function(env, undefined, jsCb, 0, nullptr, &promise);
+    napi_call_function(env, undefined, jsCb, 1, callbackArg, &promise);
 //     napi_call_function(env, undefined, callback, 1, callbackArg, &result);
     napi_value thenFunc = nullptr;
     if (napi_get_named_property(env, promise, "then", &thenFunc) != napi_ok) {
@@ -96,8 +101,9 @@ napi_value utilCallJs::loadJs(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-std::future<std::string> utilCallJs::executeJs(napi_env env, bool isMainThread)
+std::future<std::string> utilCallJs::executeJs(napi_env env, bool isMainThread,std::string& parm)
 {
+    this->callbackData->parm = parm;
     if (isMainThread) {
         // 在主线程中，创建异步队列
         OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "%{public}s::在线程%{public}u中，创建异步队列\n",__func__ ,std::this_thread::get_id());
