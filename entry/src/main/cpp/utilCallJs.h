@@ -10,7 +10,7 @@ struct CallbackData {
     napi_async_work work;
     utilCallJs* obj;
 };
-
+typedef void(*getStr)(std::string);
 class utilCallJs {
     public:
         utilCallJs(){}
@@ -18,6 +18,7 @@ class utilCallJs {
     public:
         napi_value loadJs(napi_env env, napi_callback_info info);
         std::future<std::string> executeJs(napi_env env,bool isMainThread);
+        void  executeJs(napi_env env, bool isMainThread,  getStr* cb);
 
     private:
         static void WorkComplete(napi_env env, napi_status status, void *data);

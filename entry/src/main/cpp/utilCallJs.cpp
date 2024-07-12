@@ -1,6 +1,5 @@
 #include "utilCallJs.h"
-// static std::promise<std::string> prom;
-// static std::future<std::string> fu = prom.get_future();
+
 void utilCallJs::ExecuteWork(napi_env env, void *data)
 {
     OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu\n",__func__,std::this_thread::get_id() );
@@ -37,7 +36,7 @@ napi_value utilCallJs::RejectedCallback(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
- void utilCallJs::CallJs(napi_env env, napi_value jsCb, void *context, void *data)
+void utilCallJs::CallJs(napi_env env, napi_value jsCb, void *context, void *data)
 {
     OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu\n",__func__,std::this_thread::get_id() );
     if (env == nullptr) {
@@ -108,4 +107,11 @@ std::future<std::string> utilCallJs::executeJs(napi_env env, bool isMainThread)
         utilCallJs::ExecuteWork(env,this->callbackData);
     }
     return this->prom.get_future();
+}
+
+void utilCallJs::executeJs(napi_env env, bool isMainThread, getStr* cb)
+{
+        // 在主线程中，创建异步队列
+        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "%{public}s::在线程%{public}u中，创建异步队列\n",__func__ ,std::this_thread::get_id());
+        napi_queue_async_work(env, this->callbackData->work);
 }
