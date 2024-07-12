@@ -47,6 +47,7 @@ void utilCallJs::CallJs(napi_env env, napi_value jsCb, void *context, void *data
     napi_value promise = nullptr;
     napi_get_undefined(env, &undefined);
     napi_call_function(env, undefined, jsCb, 0, nullptr, &promise);
+//     napi_call_function(env, undefined, callback, 1, callbackArg, &result);
     napi_value thenFunc = nullptr;
     if (napi_get_named_property(env, promise, "then", &thenFunc) != napi_ok) {
         return;
