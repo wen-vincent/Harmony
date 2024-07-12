@@ -13,7 +13,8 @@ struct Index {
           .fontSize(50)
           .fontWeight(FontWeight.Bold)
           .onClick( () => {
-            let callback = (): Promise<string> => {
+            let callback = (parm:string): Promise<string> => {
+              hilog.debug(0x1234,"mytest","-------------"+parm);
             return new Promise((resolve) => {
               setTimeout(() => {
                 hilog.debug(0x1234,"mytest","reasdasd");

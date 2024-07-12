@@ -1,2 +1,2 @@
 export const add: (a: number, b: number) => number;
-export const startThread: (cb:()=>Promise<string>) => Promise<number>;
+export const startThread: (cb:(a:string)=>Promise<string>) => Promise<number>;
