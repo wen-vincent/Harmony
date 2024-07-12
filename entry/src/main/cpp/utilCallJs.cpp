@@ -5,6 +5,7 @@ void utilCallJs::ExecuteWork(napi_env env, void *data)
     OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu\n",__func__,std::this_thread::get_id() );
     CallbackData *callbackData = reinterpret_cast<CallbackData *>(data);
     std::promise<std::string>& promise = std::ref(callbackData->obj->prom);
+    callbackData->result = "testCallbackData";
     napi_call_threadsafe_function(callbackData->tsfn, &promise, napi_tsfn_nonblocking);
 }
 
