@@ -29,12 +29,12 @@ static napi_value Add(napi_env env, napi_callback_info info)
 
 }
 
-static napi_value run(napi_env env, napi_callback_info info,utilCallJs* calljs)
+static napi_value run(napi_env env, napi_callback_info info,utilCallJs* calljs,bool isMainThread)
 {
 //     std::this_thread::sleep_for(std::chrono::seconds(2));
 
 //     calljs->executeJs(env);
-    std::future<std::string> fu = calljs->executeJs(env);
+    std::future<std::string> fu = calljs->executeJs(env,isMainThread);
     std::string str = fu.get();
     OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu -----%{public}s %{public}s\n",__func__ ,std::this_thread::get_id(),"run 结束",str.c_str());
     return nullptr;
@@ -47,10 +47,12 @@ static napi_value StartThread(napi_env env, napi_callback_info info)
     utilCallJs* calljs = new utilCallJs;
     calljs->loadJs(env, info);
     
-    std::thread t(run,env,info,calljs);
+    std::thread t(run,env,info,calljs,false);
     t.detach();
     
-//     std::async(run,env,info);
+    //     std::async(run,env,info);
+//         run(env,info,calljs,true);
+
     
     return nullptr;
 }
