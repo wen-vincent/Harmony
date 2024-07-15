@@ -73,12 +73,12 @@ static napi_value StartThread(napi_env env, napi_callback_info info)
 //     std::thread t(run,env,info,calljs,false);
 //     t.detach();
     
-    // std::async(run,env,info,calljs,false); // 阻塞主线程，错误
+//     std::async(run,env,info,calljs,false); // 阻塞主线程，错误
+    
     // std::thread t(run,env,info,calljs,false);
     // t.join();
     
-    run(env,info,calljs,true);
-
+//     run(env,info,calljs,true);
     
     return nullptr;
 }
