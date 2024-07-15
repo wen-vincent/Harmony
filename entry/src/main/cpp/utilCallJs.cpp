@@ -4,14 +4,20 @@ void utilCallJs::ExecuteWork(napi_env env, void *data)
 {
     OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu\n",__func__,std::this_thread::get_id() );
     CallbackData *callbackData = reinterpret_cast<CallbackData *>(data);
-        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThreadxxxxxxx %{public}s %{public}zu %{public}u\n",__func__,std::this_thread::get_id() ,callbackData);
 
-//     std::promise<std::string>& promise = std::ref(callbackData->obj->prom);
-    std::promise<std::string> promise;
+//     if (callbackData->obj->isCallInMainThread) {
+//         std::promise<std::string>& promise = std::ref(callbackData->obj->prom);
+//         napi_call_threadsafe_function(callbackData->tsfn, &promise, napi_tsfn_nonblocking);
+//     }
+//     else {
+//         std::promise<std::string> promise;
+//         auto fu = promise.get_future();
+//         napi_call_threadsafe_function(callbackData->tsfn, &promise, napi_tsfn_nonblocking);
+//         std::string value = fu.get();
+//         callbackData->obj->prom.set_value(value);
+//     }
+    std::promise<std::string>& promise = std::ref(callbackData->obj->prom);
     napi_call_threadsafe_function(callbackData->tsfn, &promise, napi_tsfn_nonblocking);
-    auto fu = promise.get_future();
-    std::string value = fu.get();
-    callbackData->obj->prom.set_value(value);
 }
 
 napi_value utilCallJs::ResolvedCallback(napi_env env, napi_callback_info info)
@@ -80,7 +86,6 @@ void utilCallJs::CallJs(napi_env env, napi_value jsCb, void *context, void *data
     napi_delete_async_work(env, callbackData->work);
     callbackData->tsfn = nullptr;
     callbackData->work = nullptr;
-    
 }
 
 napi_value utilCallJs::loadJs(napi_env env, napi_callback_info info)
@@ -108,6 +113,7 @@ napi_value utilCallJs::loadJs(napi_env env, napi_callback_info info)
 std::future<std::string> utilCallJs::executeJs(napi_env env, bool isMainThread,std::string& parm)
 {
     this->callbackData->parm = parm;
+    this->isCallInMainThread = isMainThread;
     if (isMainThread) {
         // 在主线程中，创建异步队列
         OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "%{public}s::在线程%{public}u中，创建异步队列\n",__func__ ,std::this_thread::get_id());

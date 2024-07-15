@@ -11,6 +11,7 @@ struct CallbackData {
     utilCallJs* obj;
     std::string parm;
 };
+
 typedef void(*getStr)(std::string);
 class utilCallJs {
     public:
@@ -30,7 +31,8 @@ class utilCallJs {
     private:
         CallbackData * callbackData = nullptr;
         std::promise<std::string> prom;
-        std::string parm;
+//         std::string parm;
+    bool isCallInMainThread = false;
 };
 
 #endif //HARMONY_UTILCALLJS_H

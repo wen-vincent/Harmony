@@ -70,11 +70,14 @@ static napi_value StartThread(napi_env env, napi_callback_info info)
     utilCallJs* calljs = new utilCallJs;
     calljs->loadJs(env, info);
     
-    std::thread t(run,env,info,calljs,false);
-    t.detach();
+//     std::thread t(run,env,info,calljs,false);
+//     t.detach();
     
-//         std::async(run,env,info,calljs,false);
-//         run(env,info,calljs,true);
+    // std::async(run,env,info,calljs,false); // 阻塞主线程，错误
+    // std::thread t(run,env,info,calljs,false);
+    // t.join();
+    
+    run(env,info,calljs,true);
 
     
     return nullptr;
