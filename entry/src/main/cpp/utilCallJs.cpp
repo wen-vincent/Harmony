@@ -6,8 +6,12 @@ void utilCallJs::ExecuteWork(napi_env env, void *data)
     CallbackData *callbackData = reinterpret_cast<CallbackData *>(data);
         OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThreadxxxxxxx %{public}s %{public}zu %{public}u\n",__func__,std::this_thread::get_id() ,callbackData);
 
-    std::promise<std::string>& promise = std::ref(callbackData->obj->prom);
+//     std::promise<std::string>& promise = std::ref(callbackData->obj->prom);
+    std::promise<std::string> promise;
     napi_call_threadsafe_function(callbackData->tsfn, &promise, napi_tsfn_nonblocking);
+    auto fu = promise.get_future();
+    std::string value = fu.get();
+    callbackData->obj->prom.set_value(value);
 }
 
 napi_value utilCallJs::ResolvedCallback(napi_env env, napi_callback_info info)
