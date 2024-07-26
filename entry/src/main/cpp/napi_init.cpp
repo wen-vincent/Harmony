@@ -1,15 +1,28 @@
 #include "napi/native_api.h"
 #include "hilog/log.h"
 #include "future"
-#include "utilCallJs.h"
 #include "thread"
+#include "napi/native_api.h"
+#include <native_window/external_window.h>
+#include <native_drawing/drawing_bitmap.h>
+#include <native_drawing/drawing_color.h>
+#include <native_drawing/drawing_canvas.h>
+#include <native_drawing/drawing_pen.h>
+#include <native_drawing/drawing_brush.h>
+#include <native_drawing/drawing_path.h>
+#include <cmath>
+#include <algorithm>
+#include <stdint.h>
+#include <sys/mman.h>
+#include "samples/sample_bitmap.h"
+#include "PluginManager.h"
+#include "common/log_common.h"
 
-static napi_value Add(napi_env env, napi_callback_info info)
-{
+static napi_value Add(napi_env env, napi_callback_info info) {
     size_t argc = 2;
     napi_value args[2] = {nullptr};
 
-    napi_get_cb_info(env, info, &argc, args , nullptr, nullptr);
+    napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
 
     napi_valuetype valuetype0;
     napi_typeof(env, args[0], &valuetype0);
@@ -27,70 +40,17 @@ static napi_value Add(napi_env env, napi_callback_info info)
     napi_create_double(env, value0 + value1, &sum);
 
     return sum;
-
-}
-static void getValue(std::string str)
-{
-            OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu -----%{public}s %{public}s\n",__func__ ,std::this_thread::get_id(),"run 结束",str.c_str());
-
 }
 
-static napi_value run(napi_env env, napi_callback_info info,utilCallJs* calljs,bool isMainThread)
-{
-//     std::this_thread::sleep_for(std::chrono::seconds(2));
 
-//     calljs->executeJs(env);
-    std::string parm = "@@@@@@@@@@@";
-    std::string str;
-    if(!isMainThread) {
-        std::future<std::string> fu = calljs->executeJs(env,isMainThread,parm);
-        str = fu.get();
-        OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu -----%{public}s %{public}s\n",__func__ ,std::this_thread::get_id(),"run 结束",str.c_str());
-    }
-    else {
-//         calljs->executeJs(env,isMainThread,(getStr*)getValue);
-        
-        std::future<std::string> fut = calljs->executeJs(env,isMainThread,parm);
-//         std::chrono::milliseconds span(10);
-//         while (fut.wait_for(span) == std::future_status::timeout){
-//             OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu -----%{public}s \n",__func__ ,std::this_thread::get_id(),"run 等待。。。");
-//             std::this_thread::yield();
-//         }
-//         str = fut.get();
-//         OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu -----%{public}s %{public}s\n",__func__ ,std::this_thread::get_id(),"run 结束",str.c_str());
-//         return fut;
-    }
-    return nullptr;
-}
 
-static napi_value StartThread(napi_env env, napi_callback_info info)
-{
-    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "mytest", "StartThread %{public}s %{public}zu\n",__func__ ,std::this_thread::get_id());
-    
-    utilCallJs* calljs = new utilCallJs;
-    calljs->loadJs(env, info);
-    
-//     std::thread t(run,env,info,calljs,false);
-//     t.detach();
-    
-//     std::async(run,env,info,calljs,false); // 阻塞主线程，错误
-    
-    // std::thread t(run,env,info,calljs,false);
-    // t.join();
-    
-//     run(env,info,calljs,true);
-    
-    return nullptr;
-}
+static napi_value StartThread(napi_env env, napi_callback_info info) { return nullptr; }
 
 EXTERN_C_START
-static napi_value Init(napi_env env, napi_value exports)
-{
-    CallbackData *callbackData = new CallbackData();
+static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {
-        { "add", nullptr, Add, nullptr, nullptr, nullptr, napi_default, nullptr },
-        {"startThread", nullptr, StartThread, nullptr, nullptr, nullptr, napi_default, callbackData}
-    };
+        {"add", nullptr, Add, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"startThread", nullptr, StartThread, nullptr, nullptr, nullptr, napi_default, nullptr}};
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;
 }
@@ -102,11 +62,8 @@ static napi_module demoModule = {
     .nm_filename = nullptr,
     .nm_register_func = Init,
     .nm_modname = "entry",
-    .nm_priv = ((void*)0),
-    .reserved = { 0 },
+    .nm_priv = ((void *)0),
+    .reserved = {0},
 };
 
-extern "C" __attribute__((constructor)) void RegisterEntryModule(void)
-{
-    napi_module_register(&demoModule);
-}
+extern "C" __attribute__((constructor)) void RegisterEntryModule(void) { napi_module_register(&demoModule); }
