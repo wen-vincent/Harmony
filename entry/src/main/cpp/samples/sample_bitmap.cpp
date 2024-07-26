@@ -287,6 +287,29 @@ SampleBitMap *SampleBitMap::GetInstance(std::string &id) // 通过ComponentId �
     }
 }
 
+void OnSurfaceChangedCB(OH_NativeXComponent* component, void* window)
+{
+    // 可获取 OHNativeWindow 实例
+    OHNativeWindow* nativeWindow = static_cast<OHNativeWindow*>(window);
+    char idStr[OH_XCOMPONENT_ID_LEN_MAX + 1] = {'\0'};
+    uint64_t idSize = OH_XCOMPONENT_ID_LEN_MAX + 1;
+    if (OH_NativeXComponent_GetXComponentId(component, idStr, &idSize) != OH_NATIVEXCOMPONENT_RESULT_SUCCESS) {
+        DRAWING_LOGE("OnSurfaceChangedCB: Unable to get XComponent id");
+        return;
+    }
+    std::string id(idStr);
+    auto render = SampleBitMap::GetInstance(id);
+
+    uint64_t width;
+    uint64_t height;
+    int32_t xSize = OH_NativeXComponent_GetXComponentSize(component, window, &width, &height);
+    if ((xSize == OH_NATIVEXCOMPONENT_RESULT_SUCCESS) && (render != nullptr)) {
+        render->SetHeight(height);
+        render->SetWidth(width);
+        DRAWING_LOGI("Surface Changed : xComponent width = %{public}llu, height = %{public}llu", width, height);
+    }
+}
+
 static void OnSurfaceCreatedCB(OH_NativeXComponent *component,
                                void *window) // 通过component获取ComponentId，获取实例，设置窗口及其尺寸
 {
@@ -316,7 +339,12 @@ static void OnSurfaceCreatedCB(OH_NativeXComponent *component,
         DRAWING_LOGI("xComponent width = %{public}lu, height = %{public}lu", width, height);
     }
 }
-
+void DispatchTouchEventCB(OH_NativeXComponent* component, void* window)
+{
+    // 可获取 OHNativeWindow 实例
+    OHNativeWindow* nativeWindow = static_cast<OHNativeWindow*>(window);
+    // ...
+}
 static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window) // 通过component获取ComponentId，销毁实例
 {
     DRAWING_LOGI("OnSurfaceDestroyedCB");
@@ -338,8 +366,8 @@ void SampleBitMap::RegisterCallback(OH_NativeXComponent *nativeXComponent) //注
     renderCallback_.OnSurfaceCreated = OnSurfaceCreatedCB;
     renderCallback_.OnSurfaceDestroyed = OnSurfaceDestroyedCB;
     // Callback must be initialized
-    renderCallback_.DispatchTouchEvent = nullptr;
-    renderCallback_.OnSurfaceChanged = nullptr;
+    renderCallback_.DispatchTouchEvent = DispatchTouchEventCB;
+    renderCallback_.OnSurfaceChanged = OnSurfaceChangedCB;
     OH_NativeXComponent_RegisterCallback(nativeXComponent, &renderCallback_);
 }
 

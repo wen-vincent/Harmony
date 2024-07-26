@@ -22,4 +22,4 @@ find_library(
 )
 target_link_libraries(entry PUBLIC ${hilog-lib})
 target_link_libraries(entry PUBLIC libace_ndk.z.so)
-target_link_libraries(entry PUBLIC libace_napi.z.so libhilog_ndk.z.so libnative_window.so )
+target_link_libraries(entry PUBLIC libace_napi.z.so libhilog_ndk.z.so libnative_window.so libnative_drawing.so)

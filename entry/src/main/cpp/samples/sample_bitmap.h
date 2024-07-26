@@ -67,6 +67,7 @@ private:
     OH_Drawing_Canvas *cCanvas_ = nullptr;
 
     OH_Drawing_Path *cPath_ = nullptr;
+    OH_Drawing_Brush *cBrush_ = nullptr;
     OH_Drawing_Pen *cPen_ = nullptr;
     OH_Drawing_ColorFilter *cColorFilter_ = nullptr;
 
